@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Box Folder Viewer</title>
+</head>
+<body>
+<h1>Box Folder Viewer</h1>
+<div id="folderContents">
+    <div id="imageContainer">
+
+    </div>
+</div>
+
+<script>
+
+let imgDiv= document.getElementById('imageContainer')
+
+fetch('/listItems')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Failed to fetch folder contents');
+    }
+    return response.json();
+  })
+  .then(data => {
+
+
+    let entries = data.entries;
+    entries.forEach(function(e, i){
+
+      console.log(e.id, e)
+
+      const accessToken = 'mFmjuYp4gS4DIsn4nNCBqqD8SfsIDNUZ';
+      // Replace 'YOUR_FILE_ID' with the ID of your PDF file on Box
+      const fileId = e.id
+      const boxAPIUrl = `https://api.box.com/2.0/files/${fileId}/content`;
+
+      fetch(boxAPIUrl, {
+          headers: {
+              'Authorization': `Bearer ${accessToken}`
+          }
+      })
+      .then(response => response.blob())
+      .then(blob => {
+
+
+          console.log(blob.type)
+
+          if(blob.type === 'image/jpeg' || blob.type == 'image/png'){
+
+            const objectUrl = URL.createObjectURL(blob);
+            const img = document.createElement('img');
+            img.src = objectUrl;
+            img.style.maxWidth = '500px';
+            img.style.height = 'auto';
+            imgDiv.appendChild(img);
+
+          }
+
+          /*
+
+          if(blob.type === 'application/pdf'){
+
+            const objectUrl = URL.createObjectURL(blob);
+            const iframe = document.createElement('iframe');
+            iframe.src = objectUrl;
+            iframe.width = '100%';
+            iframe.height = '600px';
+            imgDiv.appendChild(iframe);
+
+          }
+          */
+
+     
+      })
+      .catch(error => {
+          console.error('Error fetching PDF:', error);
+      });
+
+
+
+
+
+
+
+      
+    })
+
+    
+  })
+  .catch(error => {
+    console.error('Error fetching folder contents:', error);
+  });
+</script>
+</body>
+</html>
